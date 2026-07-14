@@ -393,7 +393,8 @@
       aircraftStats: { speed: 0, maneuverSpeed: 0, size: 1, color: 0xffffff },
       itemQueue: [], activeItemData: null, activeItemMesh: null, itemSpawnZ: -120,
       safeLaneX: 0,
-      elapsedTime: 0
+      elapsedTime: 0,
+      isItemLoading: false
     };
 
     const InputState = { forward: false, backward: false, left: false, right: false };
@@ -656,7 +657,7 @@
       group.add(mesh);
     }
 
-    function handleItemsManagement() {
+    /* function handleItemsManagement() {
       if (GameState.itemQueue.length === 0 && !GameState.activeItemMesh) return;
 
       if (!GameState.activeItemMesh && GameState.itemQueue.length > 0) {
@@ -701,9 +702,62 @@
           GameState.itemSpawnZ = aircraftMesh.position.z - 180;
         }
       }
+    } */
+
+    function handleItemsManagement() {
+      if (GameState.itemQueue.length === 0 && !GameState.activeItemMesh) return;
+
+      // MODIFICA: Controlla anche che non ci sia già un caricamento in corso (!GameState.isItemLoading)
+      if (!GameState.activeItemMesh && !GameState.isItemLoading && GameState.itemQueue.length > 0) {
+        GameState.isItemLoading = true; // <-- BLOCCA i frame successivi immediatemente
+        const itemData = GameState.itemQueue[0];
+        GameState.activeItemData = itemData;
+
+        createItemMesh(itemData, function (meshGroup) {
+          GameState.activeItemMesh = meshGroup;
+          GameState.isItemLoading = false; // <-- SBLOCCA solo ora che il modello è pronto in memoria
+
+          let spawnX = (Math.random() - 0.5) * (GameConfig.world.boundariesX * 1.8);
+          let spawnY = Math.random() * (GameConfig.world.maxY - 12) + 6;
+
+          buildings.forEach(b => {
+            if (Math.abs(b.position.z - GameState.itemSpawnZ) < 18) {
+              const bWidth = b.userData.width || 10;
+              const bHeight = b.userData.height || 20;
+              const safeMarginX = bWidth / 2 + 5.0;
+
+              if (Math.abs(spawnX - b.position.x) < safeMarginX && spawnY < bHeight + 3) {
+                if (bHeight < GameConfig.world.maxY - 8) {
+                  spawnY = bHeight + 4.5;
+                } else {
+                  spawnX = b.position.x > 0 ? b.position.x - safeMarginX - 2 : b.position.x + safeMarginX + 2;
+                }
+              }
+            }
+          });
+
+          spawnX = Math.max(-GameConfig.world.boundariesX + 2, Math.min(GameConfig.world.boundariesX - 2, spawnX));
+
+          GameState.activeItemMesh.position.set(spawnX, spawnY, GameState.itemSpawnZ);
+          scene.add(GameState.activeItemMesh);
+        });
+      }
+
+      // Il resto della funzione (rotazione e distruzione) rimane identico...
+      if (GameState.activeItemMesh) {
+        GameState.activeItemMesh.rotation.y += 0.04;
+        GameState.activeItemMesh.rotation.x += 0.01;
+
+        if (aircraftMesh && GameState.activeItemMesh.position.z > aircraftMesh.position.z + GameConfig.world.destroyDistanceBehind) {
+          removeActiveItemMesh();
+          GameState.itemSpawnZ = aircraftMesh.position.z - 180;
+        }
+      }
     }
 
     function removeActiveItemMesh() {
+      GameState.isItemLoading = false;
+
       if (GameState.activeItemMesh) {
         scene.remove(GameState.activeItemMesh);
 
@@ -1093,6 +1147,7 @@
       GameState.currentCredits = 0;
       GameState.safeLaneX = 0;
       GameState.elapsedTime = 0;
+      GameState.isItemLoading = false;
 
       // GameState.itemQueue = JSON.parse(JSON.stringify(InitialItemQueue));
       // SOLUZIONE: Crea una copia dell'array preservando le funzioni degli effetti
