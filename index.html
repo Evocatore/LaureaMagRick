@@ -1,0 +1,1118 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RickHard - Aerospace Graduation Run</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/STLLoader.js"></script>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+
+    body,
+    html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background-color: #050510;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+
+    #gameCanvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    .ui-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(10, 10, 25, 0.85);
+      color: white;
+      transition: opacity 0.3s ease;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .menu-box {
+      background: rgba(20, 30, 50, 0.9);
+      border: 2px solid #00d2ff;
+      border-radius: 8px;
+      padding: 30px;
+      width: 90%;
+      max-width: 480px;
+      text-align: center;
+      box-shadow: 0 0 20px rgba(0, 210, 255, 0.3);
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #00d2ff;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 14px;
+      color: #8ab4f8;
+    }
+
+    input[type="text"],
+    select {
+      width: 100%;
+      padding: 10px;
+      background: rgba(10, 15, 30, 0.8);
+      border: 1px solid #4a5d6e;
+      color: white;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #00d2ff;
+      border: none;
+      color: #0a0a19;
+      font-size: 16px;
+      font-weight: bold;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 4px;
+      transition: background 0.2s;
+      margin-bottom: 10px;
+    }
+
+    button:hover {
+      background: #009ec2;
+      box-shadow: 0 0 10px rgba(0, 210, 255, 0.5);
+    }
+
+    button.btn-danger {
+      background: #ff3333;
+      color: white;
+    }
+
+    button.btn-danger:hover {
+      background: #cc2222;
+      box-shadow: 0 0 10px rgba(255, 51, 51, 0.5);
+    }
+
+    .quiz-answers button {
+      background: rgba(30, 45, 75, 0.8);
+      color: white;
+      border: 1px solid #4a5d6e;
+      text-transform: none;
+      font-weight: normal;
+      text-align: left;
+      padding: 12px 15px;
+    }
+
+    .quiz-answers button:hover {
+      background: #00d2ff;
+      color: #0a0a19;
+    }
+
+    #hud {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      padding: 20px;
+      z-index: 5;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      pointer-events: none;
+    }
+
+    .hud-metric {
+      background: rgba(10, 15, 30, 0.7);
+      padding: 10px 15px;
+      border-left: 4px solid #00d2ff;
+      font-family: monospace;
+      font-size: 18px;
+    }
+
+    #btn-pause {
+      pointer-events: auto;
+      width: auto;
+      padding: 8px 15px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      border: 1px solid white;
+    }
+
+    #imprevisto-toast {
+      position: absolute;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(230, 140, 10, 0.9);
+      border: 2px solid #ffaa00;
+      color: white;
+      padding: 12px 25px;
+      border-radius: 4px;
+      font-weight: bold;
+      z-index: 6;
+      box-shadow: 0 0 15px rgba(255, 170, 0, 0.4);
+      transition: opacity 0.5s;
+    }
+
+    .bocciatura-box {
+      border-color: #ff3333;
+      box-shadow: 0 0 20px rgba(255, 51, 51, 0.3);
+    }
+
+    .bocciatura-box h1 {
+      color: #ff3333;
+    }
+
+    .laurea-box {
+      border-color: #33ff66;
+      box-shadow: 0 0 20px rgba(51, 255, 102, 0.3);
+    }
+
+    .laurea-box h1 {
+      color: #33ff66;
+    }
+
+    #countdown-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 100;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      background: rgba(5, 5, 15, 0.5);
+      color: #00d2ff;
+      font-size: 120px;
+      font-weight: bold;
+      font-family: monospace;
+      text-shadow: 0 0 30px rgba(0, 210, 255, 0.8);
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="countdown-overlay" class="hidden">3</div>
+
+  <canvas id="gameCanvas"></canvas>
+
+  <div id="hud" class="hidden">
+    <div class="hud-metric" id="hud-username">Pilota: -</div>
+    <div class="hud-metric" id="hud-credits">CFU: 0 / 110</div>
+    <div class="hud-metric" id="hud-timer">Tempo: 00:00</div>
+    <button id="btn-pause">PAUSA (P)</button>
+  </div>
+
+  <div id="imprevisto-toast" class="hidden">IMPREVISTO!</div>
+
+  <div id="menu-main" class="ui-overlay">
+    <div class="menu-box">
+      <h1>Aerospace Run</h1>
+      <div class="form-group">
+        <label for="username">Nome Studente / Pilota</label>
+        <input type="text" id="username" placeholder="Inserisci il tuo cognome" value="TuoNome">
+      </div>
+      <div class="form-group">
+        <label for="aircraft">Seleziona Velivolo</label>
+        <select id="aircraft">
+          <option value="glider">Aliante di Linea (Maneggevole)</option>
+          <option value="jet">Jet Supersonico (Rapido)</option>
+          <option value="helicopter">Elicottero d'Attacco (Bilanciato)</option>
+          <option value="drone">Drone Quadricottero (Leggero/Scattante)</option>
+        </select>
+      </div>
+      <button id="btn-start">Inizia la Sessione</button>
+    </div>
+  </div>
+
+  <div id="menu-pause" class="ui-overlay hidden">
+    <div class="menu-box">
+      <h1>Sessione in Pausa</h1>
+      <p style="margin-bottom: 20px; color: #aaa;">Il tempo vola, ma l'ingegneria si ferma.</p>
+      <button id="btn-resume">Riprendi Volo</button>
+      <button id="btn-pause-exit" class="btn-danger">Abbandona Sessione</button>
+    </div>
+  </div>
+
+  <div id="menu-quiz" class="ui-overlay hidden">
+    <div class="menu-box" style="border-color: #ffaa00;">
+      <h1 id="quiz-title" style="color: #ffaa00;">Appello d'Esame</h1>
+      <p id="quiz-question" style="margin-bottom: 20px; text-align: left; font-size: 16px; line-height: 1.4;"></p>
+      <div class="quiz-answers" id="quiz-options-container">
+      </div>
+    </div>
+  </div>
+
+  <div id="menu-gameover" class="ui-overlay hidden">
+    <div class="menu-box bocciatura-box">
+      <h1>BOCCIATO!</h1>
+      <p style="margin-bottom: 20px;" id="gameover-reason">Collisione con struttura non autorizzata.</p>
+      <button id="btn-restart">Ritenta l'Esame</button>
+    </div>
+  </div>
+
+  <div id="menu-victory" class="ui-overlay hidden">
+    <div class="menu-box laurea-box">
+      <h1>Dottore Magistrale!</h1>
+      <p style="margin-bottom: 20px; font-size: 18px;" id="victory-message">Auguri!</p>
+      <button id="btn-menu-return">Torna al Menu</button>
+    </div>
+  </div>
+
+  <script>
+    // ==========================================
+    // CONFIGURAZIONE GLOBALE
+    // ==========================================
+    const GameConfig = {
+      aircraft: {
+        glider: {
+          speed: 32, maneuverSpeed: 20, size: 1.0, color: 0x00ffaa,
+          modelPath: './models/glider.stl',
+          rotX: -Math.PI / 2, rotY: 0, rotZ: Math.PI / 2,
+          maxTargetSize: 3.5
+        },
+        jet: {
+          speed: 55, maneuverSpeed: 32, size: 0.8, color: 0xff3300,
+          modelPath: './models/jet.stl',
+          rotX: -Math.PI / 2, rotY: 0, rotZ: -Math.PI / 2,
+          maxTargetSize: 3.0
+        },
+        helicopter: {
+          speed: 38, maneuverSpeed: 24, size: 1.1, color: 0x00aaff,
+          modelPath: './models/helicopter.stl',
+          rotX: -Math.PI / 2, rotY: 0, rotZ: 0,
+          maxTargetSize: 3.8
+        },
+        drone: {
+          speed: 44, maneuverSpeed: 30, size: 0.8, color: 0xffff00,
+          modelPath: './models/drone.stl',
+          rotX: -Math.PI / 2, rotY: 0, rotZ: 0,
+          maxTargetSize: 2.2
+        }
+      },
+      world: {
+        spawnDistanceAhead: 500,
+        destroyDistanceBehind: 50,
+        buildingSpacing: 8,
+        boundariesX: 35,
+        minY: 1,
+        maxY: 30,
+        baseFogDensity: 0.006
+      },
+      gameplay: {
+        targetCredits: 110,
+        targetTime: 300
+      }
+    };
+
+    const InitialItemQueue = [
+      {
+        type: 'UNFORESEEN', name: 'Caffè Triplo della Macchinetta',
+        text: 'Effetto: Spinta iperbolica! Velocità aumentata!',
+        color: 0x6f4e37, modelPath: './models/coffee_cup.stl',
+        effect: (stats) => { stats.speed *= 1.5; }
+      },
+      {
+        type: 'EXAM', name: 'Analisi Matematica I', credits: 30,
+        question: 'Qual è il limite per x che tende a 0 di sin(x)/x ?',
+        options: ['0', '1', 'Infinito'], correct: 1,
+        color: 0xff3333, modelPath: './models/book.stl'
+      },
+      {
+        type: 'UNFORESEEN', name: 'Pausa Studio Prolungata',
+        text: 'Effetto: Lucidità ripristinata ma nessun bonus visivo.',
+        // Senza color e modelPath: testerà automaticamente il fallback procedurale geometrico
+        effect: (stats) => { stats.maneuverSpeed += 2; }
+      },
+      {
+        type: 'EXAM', name: 'Fisica Generale I', credits: 40,
+        question: 'Nel vuoto, se un grave cade da un\'altezza h, la sua velocità finale dipende dalla sua massa?',
+        options: ['Sì, direttamente', 'No, mai', 'Solo se la traiettoria è parabolica'], correct: 1,
+        color: 0x33ff33, modelPath: './models/atom.stl'
+      },
+      {
+        type: 'UNFORESEEN', name: 'Sciopero dei Mezzi / Nebbia in Val Padana',
+        text: 'Effetto: Visibilità compromessa (Foschia densa!)',
+        color: 0x888888, // Solo colore personalizzato, usa comunque il fallback geometrico
+        effect: (stats) => { scene.fog.density = 0.015; stats.speed /= 1.5; }
+      },
+      {
+        type: 'EXAM', name: 'Fluidodinamica', credits: 40,
+        question: 'Secondo il teorema di Bernoulli, in un fluido ideale, se la velocità aumenta, allora la pressione locale:',
+        options: ['Aumenta', 'Resta identica', 'Diminuisce'], correct: 2,
+        color: 0x3333ff, modelPath: './models/wing.stl'
+      },
+      {
+        type: 'GRADUATION', name: 'Pergamena di Laurea Magistrale',
+        color: 0x33ff66, modelPath: './models/diploma.stl'
+      }
+    ];
+
+    // STATO DEL GIOCO
+    const GameState = {
+      status: 'MENU',
+      username: '',
+      selectedAircraft: 'glider',
+      currentCredits: 0,
+      aircraftStats: { speed: 0, maneuverSpeed: 0, size: 1, color: 0xffffff },
+      itemQueue: [], activeItemData: null, activeItemMesh: null, itemSpawnZ: -120,
+      safeLaneX: 0,
+      elapsedTime: 0
+    };
+
+    const InputState = { forward: false, backward: false, left: false, right: false };
+
+    // VARIABILI MOTORE 3D
+    let scene, camera, renderer, clock;
+    let aircraftMesh = null; let buildings = []; let nextSpawnZ = -50;
+
+    const aircraftBox = new THREE.Box3(); const buildingBox = new THREE.Box3(); const itemBox = new THREE.Box3();
+
+    // ==========================================
+    // SISTEMA AUDIO IBRIDO COMPLETO
+    // ==========================================
+    const AudioManager = {
+      ctx: null, bgmInstance: null, synthInterval: null, noteIndex: 0,
+
+      init() {
+        if (!this.ctx) this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+        if (this.ctx.state === 'suspended') this.ctx.resume();
+      },
+      playBGM() {
+        this.stopBGM();
+        this.bgmInstance = new Audio('bgm.mp3');
+        this.bgmInstance.loop = true;
+        this.bgmInstance.volume = 0.3;
+        this.bgmInstance.play().catch(() => { this.startSynthBGM(); });
+      },
+      stopBGM() {
+        if (this.bgmInstance) { this.bgmInstance.pause(); this.bgmInstance = null; }
+        if (this.synthInterval) { clearInterval(this.synthInterval); this.synthInterval = null; }
+      },
+      pauseAll() {
+        if (this.bgmInstance) this.bgmInstance.pause();
+        if (this.ctx) this.ctx.suspend();
+      },
+      resumeAll() {
+        this.init();
+        if (this.bgmInstance && GameState.status === 'PLAYING') this.bgmInstance.play().catch(() => { });
+      },
+      playSFX(type) {
+        let audio = new Audio(type + '.mp3');
+        audio.volume = 0.5;
+        audio.play().catch(() => { this.playSynthSFX(type); });
+      },
+      startSynthBGM() {
+        if (this.synthInterval) clearInterval(this.synthInterval);
+        const notes = [110, 110, 130, 146, 110, 110, 165, 146];
+        this.synthInterval = setInterval(() => {
+          if (GameState.status !== 'PLAYING') return;
+          let osc = this.ctx.createOscillator(); let gain = this.ctx.createGain();
+          osc.connect(gain); gain.connect(this.ctx.destination);
+          osc.type = 'triangle'; osc.frequency.setValueAtTime(notes[this.noteIndex % notes.length], this.ctx.currentTime);
+          gain.gain.setValueAtTime(0.12, this.ctx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.22);
+          osc.start(); osc.stop(this.ctx.currentTime + 0.22);
+          this.noteIndex++;
+        }, 240);
+      },
+      playSynthSFX(type) {
+        if (!this.ctx) return;
+        const now = this.ctx.currentTime;
+        if (type === 'quiz') {
+          let osc = this.ctx.createOscillator(); let gain = this.ctx.createGain();
+          osc.connect(gain); gain.connect(this.ctx.destination); osc.type = 'sine';
+          osc.frequency.setValueAtTime(587.33, now); osc.frequency.setValueAtTime(880, now + 0.08);
+          gain.gain.setValueAtTime(0.2, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+          osc.start(); osc.stop(now + 0.3);
+        } else if (type === 'gameover') {
+          let osc = this.ctx.createOscillator(); let gain = this.ctx.createGain();
+          osc.connect(gain); gain.connect(this.ctx.destination); osc.type = 'sawtooth';
+          osc.frequency.setValueAtTime(280, now); osc.frequency.linearRampToValueAtTime(40, now + 0.8);
+          gain.gain.setValueAtTime(0.3, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.8);
+          osc.start(); osc.stop(now + 0.8);
+        } else if (type === 'victory') {
+          const chord = [523.25, 659.25, 783.99, 1046.50];
+          chord.forEach((freq, i) => {
+            let osc = this.ctx.createOscillator(); let gain = this.ctx.createGain();
+            osc.connect(gain); gain.connect(this.ctx.destination); osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + i * 0.1);
+            gain.gain.setValueAtTime(0, now); gain.gain.setValueAtTime(0.25, now + i * 0.1);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + i * 0.1 + 0.5);
+            osc.start(now + i * 0.1); osc.stop(now + i * 0.1 + 0.5);
+          });
+        }
+      }
+    };
+
+    // ==========================================
+    // INIZIALIZZAZIONE AMBIENTE 3D
+    // ==========================================
+    function init3D() {
+      const canvas = document.getElementById('gameCanvas');
+      clock = new THREE.Clock();
+
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0a0a1a);
+      scene.fog = new THREE.FogExp2(0x0a0a1a, GameConfig.world.baseFogDensity);
+
+      camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+      renderer = new THREE.WebGLRenderer({ canvas: canvas, antialias: true });
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      renderer.setPixelRatio(window.devicePixelRatio);
+
+      const ambientLight = new THREE.AmbientLight(0xffffff, 0.25);
+      scene.add(ambientLight);
+
+      const dirLight1 = new THREE.DirectionalLight(0x00d2ff, 0.8);
+      dirLight1.position.set(20, 40, 20);
+      scene.add(dirLight1);
+
+      const gridHelper = new THREE.GridHelper(2000, 100, 0x4a5d6e, 0x223344);
+      scene.add(gridHelper);
+
+      window.addEventListener('keydown', handleKeyDown);
+      window.addEventListener('keyup', handleKeyUp);
+      window.addEventListener('resize', onWindowResize);
+    }
+
+    function onWindowResize() {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    function handleKeyDown(e) {
+      if (GameState.status !== 'PLAYING') {
+        if ((e.key.toLowerCase() === 'p' || e.key === 'Escape') && GameState.status === 'PAUSED') resumeGame();
+        return;
+      }
+      if (e.key === 'ArrowUp' || e.key.toLowerCase() === 'w') InputState.forward = true;
+      if (e.key === 'ArrowDown' || e.key.toLowerCase() === 's') InputState.backward = true;
+      if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') InputState.left = true;
+      if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') InputState.right = true;
+      if (e.key.toLowerCase() === 'p' || e.key === 'Escape') changeState('PAUSED');
+    }
+
+    function handleKeyUp(e) {
+      if (e.key === 'ArrowUp' || e.key.toLowerCase() === 'w') InputState.forward = false;
+      if (e.key === 'ArrowDown' || e.key.toLowerCase() === 's') InputState.backward = false;
+      if (e.key === 'ArrowLeft' || e.key.toLowerCase() === 'a') InputState.left = false;
+      if (e.key === 'ArrowRight' || e.key.toLowerCase() === 'd') InputState.right = false;
+    }
+
+    function resumeGame() {
+      document.getElementById('menu-pause').classList.add('hidden');
+      document.getElementById('menu-quiz').classList.add('hidden');
+
+      startCountdown(3, () => {
+        clock.getDelta();
+        changeState('PLAYING');
+      });
+    }
+
+    function startCountdown(seconds, onComplete) {
+      const overlay = document.getElementById('countdown-overlay');
+      overlay.classList.remove('hidden');
+      overlay.innerText = seconds;
+
+      if (AudioManager.ctx) {
+        const now = AudioManager.ctx.currentTime;
+        let osc = AudioManager.ctx.createOscillator();
+        let gain = AudioManager.ctx.createGain();
+        osc.connect(gain); gain.connect(AudioManager.ctx.destination);
+        osc.frequency.setValueAtTime(440, now);
+        gain.gain.setValueAtTime(0.05, now);
+        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+        osc.start(); osc.stop(now + 0.1);
+      }
+
+      if (seconds > 0) {
+        setTimeout(() => {
+          startCountdown(seconds - 1, onComplete);
+        }, 1000);
+      } else {
+        overlay.classList.add('hidden');
+        onComplete();
+      }
+    }
+
+    function updateAircraftMovement(deltaTime) {
+      if (!aircraftMesh) return;
+      const mSpeed = GameState.aircraftStats.maneuverSpeed;
+
+      if (InputState.left) aircraftMesh.position.x -= mSpeed * deltaTime;
+      if (InputState.right) aircraftMesh.position.x += mSpeed * deltaTime;
+      if (InputState.forward) aircraftMesh.position.y += mSpeed * deltaTime;
+      if (InputState.backward) aircraftMesh.position.y -= mSpeed * deltaTime;
+
+      aircraftMesh.position.x = Math.max(-GameConfig.world.boundariesX, Math.min(GameConfig.world.boundariesX, aircraftMesh.position.x));
+      aircraftMesh.position.y = Math.max(GameConfig.world.minY, Math.min(GameConfig.world.maxY, aircraftMesh.position.y));
+
+      if (InputState.left) aircraftMesh.rotation.z = THREE.MathUtils.lerp(aircraftMesh.rotation.z, 0.4, 0.1);
+      else if (InputState.right) aircraftMesh.rotation.z = THREE.MathUtils.lerp(aircraftMesh.rotation.z, -0.4, 0.1);
+      else aircraftMesh.rotation.z = THREE.MathUtils.lerp(aircraftMesh.rotation.z, 0, 0.1);
+    }
+
+    // ==========================================
+    // CARICAMENTO ED ELABORAZIONE MODELLI ITEM (STL / FALLBACK)
+    // ==========================================
+    function createItemMesh(itemData, onComplete) {
+      const group = new THREE.Group();
+
+      let defaultColor = 0xffff00;
+      if (itemData.type === 'EXAM') defaultColor = 0xffaa00;
+      else if (itemData.type === 'UNFORESEEN') defaultColor = 0xff00ff;
+      else if (itemData.type === 'GRADUATION') defaultColor = 0x33ff66;
+
+      const itemColor = itemData.color !== undefined ? itemData.color : defaultColor;
+
+      if (itemData.modelPath) {
+        const loader = new THREE.STLLoader();
+        loader.load(
+          itemData.modelPath,
+          function (geometry) {
+            const material = new THREE.MeshStandardMaterial({ color: itemColor, roughness: 0.3, metalness: 0.2 });
+            const mesh = new THREE.Mesh(geometry, material);
+
+            geometry.center();
+            geometry.computeBoundingBox();
+            const box = geometry.boundingBox;
+            const maxDim = Math.max(box.max.x - box.min.x, box.max.y - box.min.y, box.max.z - box.min.z);
+
+            const targetItemSize = 2.0;
+            const scaleFactor = targetItemSize / (maxDim || 1);
+            mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+            group.add(mesh);
+            onComplete(group);
+          },
+          undefined,
+          function (error) {
+            console.warn(`Modello oggetto "${itemData.modelPath}" non trovato. Fallback procedurale.`);
+            buildProceduralItem(itemData, itemColor, group);
+            onComplete(group);
+          }
+        );
+      } else {
+        buildProceduralItem(itemData, itemColor, group);
+        onComplete(group);
+      }
+    }
+
+    function buildProceduralItem(itemData, itemColor, group) {
+      let geometry, material;
+
+      if (itemData.type === 'EXAM') {
+        geometry = new THREE.OctahedronGeometry(1.5);
+        material = new THREE.MeshStandardMaterial({ color: itemColor, emissive: itemColor, emissiveIntensity: 0.2, roughness: 0.2 });
+      } else if (itemData.type === 'UNFORESEEN') {
+        geometry = new THREE.TorusGeometry(1.0, 0.3, 8, 24);
+        material = new THREE.MeshStandardMaterial({ color: itemColor, emissive: itemColor, emissiveIntensity: 0.1, roughness: 0.2 });
+      } else if (itemData.type === 'GRADUATION') {
+        geometry = new THREE.TorusKnotGeometry(1.2, 0.4, 64, 8);
+        material = new THREE.MeshStandardMaterial({ color: itemColor, emissive: itemColor, emissiveIntensity: 0.2, roughness: 0.1 });
+      } else {
+        geometry = new THREE.SphereGeometry(0.9, 8, 8);
+        material = new THREE.MeshStandardMaterial({ color: itemColor, roughness: 0.4 });
+      }
+
+      const mesh = new THREE.Mesh(geometry, material);
+      group.add(mesh);
+    }
+
+    function handleItemsManagement() {
+      if (GameState.itemQueue.length === 0 && !GameState.activeItemMesh) return;
+
+      if (!GameState.activeItemMesh && GameState.itemQueue.length > 0) {
+        const itemData = GameState.itemQueue[0];
+        GameState.activeItemData = itemData;
+
+        createItemMesh(itemData, function (meshGroup) {
+          GameState.activeItemMesh = meshGroup;
+
+          let spawnX = (Math.random() - 0.5) * (GameConfig.world.boundariesX * 1.8);
+          let spawnY = Math.random() * (GameConfig.world.maxY - 12) + 6;
+
+          buildings.forEach(b => {
+            if (Math.abs(b.position.z - GameState.itemSpawnZ) < 18) {
+              const bWidth = b.userData.width || 10;
+              const bHeight = b.userData.height || 20;
+              const safeMarginX = bWidth / 2 + 5.0;
+
+              if (Math.abs(spawnX - b.position.x) < safeMarginX && spawnY < bHeight + 3) {
+                if (bHeight < GameConfig.world.maxY - 8) {
+                  spawnY = bHeight + 4.5;
+                } else {
+                  spawnX = b.position.x > 0 ? b.position.x - safeMarginX - 2 : b.position.x + safeMarginX + 2;
+                }
+              }
+            }
+          });
+
+          spawnX = Math.max(-GameConfig.world.boundariesX + 2, Math.min(GameConfig.world.boundariesX - 2, spawnX));
+
+          GameState.activeItemMesh.position.set(spawnX, spawnY, GameState.itemSpawnZ);
+          scene.add(GameState.activeItemMesh);
+        });
+      }
+
+      if (GameState.activeItemMesh) {
+        GameState.activeItemMesh.rotation.y += 0.04;
+        GameState.activeItemMesh.rotation.x += 0.01;
+
+        if (aircraftMesh && GameState.activeItemMesh.position.z > aircraftMesh.position.z + GameConfig.world.destroyDistanceBehind) {
+          removeActiveItemMesh();
+          GameState.itemSpawnZ = aircraftMesh.position.z - 180;
+        }
+      }
+    }
+
+    function removeActiveItemMesh() {
+      if (GameState.activeItemMesh) {
+        scene.remove(GameState.activeItemMesh);
+
+        GameState.activeItemMesh.traverse(child => {
+          if (child.isMesh) {
+            if (child.geometry) child.geometry.dispose();
+            if (child.material) {
+              if (Array.isArray(child.material)) {
+                child.material.forEach(m => m.dispose());
+              } else {
+                child.material.dispose();
+              }
+            }
+          }
+        });
+
+        GameState.activeItemMesh = null;
+        GameState.activeItemData = null;
+      }
+    }
+
+    function checkCollisions() {
+      if (!aircraftMesh) return;
+      aircraftBox.setFromObject(aircraftMesh);
+
+      for (let i = 0; i < buildings.length; i++) {
+        buildingBox.setFromObject(buildings[i]);
+        if (aircraftBox.intersectsBox(buildingBox)) {
+          triggerGameOver("Bocciatura immediata: impatto strutturale sul campus.");
+          return;
+        }
+      }
+
+      if (GameState.activeItemMesh) {
+        itemBox.setFromObject(GameState.activeItemMesh);
+        if (aircraftBox.intersectsBox(itemBox)) processItemCollection();
+      }
+    }
+
+    function processItemCollection() {
+      const item = GameState.activeItemData;
+      if (!item) return;
+
+      // Rimuove l'oggetto dalla coda solo adesso che è stato raccolto con successo
+      GameState.itemQueue.shift();
+
+      removeActiveItemMesh();
+      GameState.itemSpawnZ = aircraftMesh.position.z - 200;
+
+      const itemType = item.type.toUpperCase();
+
+      if (itemType === 'EXAM') {
+        AudioManager.playSFX('quiz');
+        changeState('QUIZ');
+        launchQuiz(item);
+      } else if (itemType === 'UNFORESEEN') {
+        AudioManager.playSFX('quiz');
+        if (typeof item.effect === 'function') {
+          item.effect(GameState.aircraftStats);
+        }
+        const toast = document.getElementById('imprevisto-toast');
+        if (toast) {
+          toast.innerText = `${item.name}\n${item.text || ''}`;
+          toast.classList.remove('hidden');
+          setTimeout(() => toast.classList.add('hidden'), 4000);
+        }
+      } else if (itemType === 'GRADUATION') {
+        AudioManager.stopBGM();
+        AudioManager.playSFX('victory');
+        GameState.currentCredits = GameConfig.gameplay.targetCredits;
+        updateHUD();
+        changeState('VICTORY');
+      }
+    }
+
+    function launchQuiz(examData) {
+      document.getElementById('quiz-title').innerText = `Esame: ${examData.name} (${examData.credits} CFU)`;
+      document.getElementById('quiz-question').innerText = examData.question;
+      const container = document.getElementById('quiz-options-container');
+      container.innerHTML = '';
+      examData.options.forEach((option, index) => {
+        const btn = document.createElement('button'); btn.innerText = option;
+        btn.addEventListener('click', () => {
+          if (index === examData.correct) {
+            GameState.currentCredits += examData.credits;
+            resumeGame();
+          } else {
+            triggerGameOver(`Esame fallito in ${examData.name}. Risposta non accademica.`);
+          }
+        });
+        container.appendChild(btn);
+      });
+    }
+
+    function triggerGameOver(reason) {
+      AudioManager.stopBGM(); AudioManager.playSFX('gameover');
+      document.getElementById('gameover-reason').innerText = reason; changeState('GAMEOVER');
+    }
+
+    // ==========================================
+    // GENERAZIONE MONDO CON SISTEMA DI PASSAGGIO GARANTITO
+    // ==========================================
+    function createAircraft(type) {
+      if (aircraftMesh) scene.remove(aircraftMesh);
+      const stats = GameConfig.aircraft[type];
+      const group = new THREE.Group();
+
+      group.position.set(0, 5, 0);
+      scene.add(group);
+      aircraftMesh = group;
+
+      const loader = new THREE.STLLoader();
+
+      loader.load(
+        stats.modelPath,
+        function (geometry) {
+          const material = new THREE.MeshStandardMaterial({ color: stats.color, roughness: 0.4 });
+          const mesh = new THREE.Mesh(geometry, material);
+
+          geometry.center();
+          geometry.computeBoundingBox();
+          const box = geometry.boundingBox;
+
+          const sizeX = box.max.x - box.min.x;
+          const sizeY = box.max.y - box.min.y;
+          const sizeZ = box.max.z - box.min.z;
+          const maxDimension = Math.max(sizeX, sizeY, sizeZ);
+
+          const targetSize = stats.maxTargetSize || 3.0;
+          const scaleFactor = (targetSize / maxDimension) * stats.size;
+
+          mesh.scale.set(scaleFactor, scaleFactor, scaleFactor);
+
+          mesh.rotation.x = stats.rotX !== undefined ? stats.rotX : 0;
+          mesh.rotation.y = stats.rotY !== undefined ? stats.rotY : 0;
+          mesh.rotation.z = stats.rotZ !== undefined ? stats.rotZ : 0;
+
+          group.add(mesh);
+        },
+        undefined,
+        function (error) {
+          console.warn(`Modello 3D "${stats.modelPath}" non trovato. Attivazione fallback procedurale.`);
+          buildProceduralAircraft(type, stats, group);
+        }
+      );
+    }
+
+    function buildProceduralAircraft(type, stats, group) {
+      const bodyMat = new THREE.MeshStandardMaterial({ color: stats.color, roughness: 0.4 });
+      const darkMat = new THREE.MeshStandardMaterial({ color: 0x111122, roughness: 0.2 });
+
+      if (type === 'glider') {
+        const bodyGeo = new THREE.CylinderGeometry(0.3 * stats.size, 0.3 * stats.size, 3 * stats.size, 8);
+        bodyGeo.rotateX(Math.PI / 2);
+        group.add(new THREE.Mesh(bodyGeo, bodyMat));
+
+        const noseGeo = new THREE.ConeGeometry(0.3 * stats.size, 1 * stats.size, 8);
+        noseGeo.rotateX(-Math.PI / 2); noseGeo.translate(0, 0, -2 * stats.size);
+        group.add(new THREE.Mesh(noseGeo, darkMat));
+
+        const wingGeo = new THREE.BoxGeometry(4 * stats.size, 0.05 * stats.size, 1 * stats.size);
+        wingGeo.translate(0, 0, -0.2 * stats.size);
+        group.add(new THREE.Mesh(wingGeo, bodyMat));
+      }
+      else if (type === 'jet') {
+        const bodyGeo = new THREE.CylinderGeometry(0.22 * stats.size, 0.15 * stats.size, 2.8 * stats.size, 8);
+        bodyGeo.rotateX(Math.PI / 2);
+        group.add(new THREE.Mesh(bodyGeo, bodyMat));
+
+        const noseGeo = new THREE.ConeGeometry(0.22 * stats.size, 1.2 * stats.size, 8);
+        noseGeo.rotateX(-Math.PI / 2); noseGeo.translate(0, 0, -2 * stats.size);
+        group.add(new THREE.Mesh(noseGeo, darkMat));
+
+        const wingGeo = new THREE.BoxGeometry(2.8 * stats.size, 0.04 * stats.size, 1.2 * stats.size);
+        wingGeo.translate(0, 0, 0.2 * stats.size);
+        group.add(new THREE.Mesh(wingGeo, bodyMat));
+      }
+      else if (type === 'helicopter') {
+        const cabGeo = new THREE.SphereGeometry(0.55 * stats.size, 8, 8);
+        cabGeo.scale(1, 1, 1.4);
+        group.add(new THREE.Mesh(cabGeo, bodyMat));
+
+        const tailGeo = new THREE.CylinderGeometry(0.08 * stats.size, 0.04 * stats.size, 1.8 * stats.size, 6);
+        tailGeo.rotateX(Math.PI / 2); tailGeo.translate(0, 0.1 * stats.size, 1.4 * stats.size);
+        group.add(new THREE.Mesh(tailGeo, bodyMat));
+
+        const rotorGeo = new THREE.BoxGeometry(3.8 * stats.size, 0.02 * stats.size, 0.15 * stats.size);
+        rotorGeo.translate(0, 0.6 * stats.size, 0);
+        group.add(new THREE.Mesh(rotorGeo, darkMat));
+      }
+      else if (type === 'drone') {
+        const coreGeo = new THREE.BoxGeometry(0.5 * stats.size, 0.15 * stats.size, 0.5 * stats.size);
+        group.add(new THREE.Mesh(coreGeo, bodyMat));
+
+        const armMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
+        for (let i = 0; i < 4; i++) {
+          const angle = (Math.PI / 4) + (i * Math.PI / 2);
+          const dist = 0.6 * stats.size;
+
+          const armGeo = new THREE.CylinderGeometry(0.04 * stats.size, 0.04 * stats.size, 0.8 * stats.size, 4);
+          armGeo.rotateX(Math.PI / 2);
+          const arm = new THREE.Mesh(armGeo, armMat);
+          arm.position.set(Math.cos(angle) * dist * 0.5, 0, Math.sin(angle) * dist * 0.5);
+          arm.rotation.y = -angle;
+          group.add(arm);
+
+          const propGeo = new THREE.BoxGeometry(0.35 * stats.size, 0.01 * stats.size, 0.04 * stats.size);
+          const prop = new THREE.Mesh(propGeo, darkMat);
+          prop.position.set(Math.cos(angle) * dist, 0.1 * stats.size, Math.sin(angle) * dist);
+          group.add(prop);
+        }
+      }
+    }
+
+    function handleProceduralGeneration() {
+      const targetZ = aircraftMesh.position.z - GameConfig.world.spawnDistanceAhead;
+
+      while (nextSpawnZ > targetZ) {
+        if (Math.random() < 0.35) {
+          GameState.safeLaneX += (Math.random() - 0.5) * 8;
+          GameState.safeLaneX = Math.max(-12, Math.min(12, GameState.safeLaneX));
+        }
+
+        const isObstacleInPath = Math.random() < 0.28;
+        const width = Math.random() * 10 + 6;
+        const height = Math.random() * 32 + 10;
+        const depth = Math.random() * 8 + 8;
+
+        const geo = new THREE.BoxGeometry(width, height, depth);
+        const mat = new THREE.MeshStandardMaterial({ color: isObstacleInPath ? 0x2e3b4e : 0x141f2e, roughness: 0.6 });
+        const building = new THREE.Mesh(geo, mat);
+
+        let xPos = 0;
+        const safeBuffer = 5.0;
+        const halfW = width / 2;
+
+        if (isObstacleInPath) {
+          xPos = (Math.random() - 0.5) * 24;
+
+          if (xPos - halfW - safeBuffer < GameState.safeLaneX && xPos + halfW + safeBuffer > GameState.safeLaneX) {
+            if (xPos > GameState.safeLaneX) {
+              xPos = GameState.safeLaneX + halfW + safeBuffer;
+            } else {
+              xPos = GameState.safeLaneX - halfW - safeBuffer;
+            }
+          }
+        } else {
+          const isLeft = Math.random() > 0.5;
+          xPos = 18 + halfW;
+          if (isLeft) xPos = -xPos;
+
+          if (isLeft && (xPos + halfW + safeBuffer > GameState.safeLaneX)) {
+            xPos = GameState.safeLaneX - halfW - safeBuffer;
+          } else if (!isLeft && (xPos - halfW - safeBuffer < GameState.safeLaneX)) {
+            xPos = GameState.safeLaneX + halfW + safeBuffer;
+          }
+        }
+
+        xPos = Math.max(-35, Math.min(35, xPos));
+
+        building.position.set(xPos, height / 2, nextSpawnZ);
+        building.userData = { width: width, height: height, depth: depth };
+
+        scene.add(building);
+        buildings.push(building);
+
+        nextSpawnZ -= GameConfig.world.buildingSpacing * (0.6 + Math.random() * 0.8);
+      }
+
+      for (let i = buildings.length - 1; i >= 0; i--) {
+        if (buildings[i].position.z > aircraftMesh.position.z + GameConfig.world.destroyDistanceBehind) {
+          scene.remove(buildings[i]);
+          buildings[i].geometry.dispose(); buildings[i].material.dispose();
+          buildings.splice(i, 1);
+        }
+      }
+    }
+
+    function clearAllBuildings() {
+      buildings.forEach(b => { scene.remove(b); b.geometry.dispose(); b.material.dispose(); });
+      buildings = []; nextSpawnZ = -50;
+    }
+
+    // ==========================================
+    // GAME LOOP
+    // ==========================================
+    function animate() {
+      requestAnimationFrame(animate);
+      const deltaTime = clock.getDelta();
+
+      if (GameState.status === 'PLAYING' || GameState.status === 'QUIZ') {
+        GameState.elapsedTime += deltaTime;
+
+        const minutes = Math.floor(GameState.elapsedTime / 60);
+        const seconds = Math.floor(GameState.elapsedTime % 60).toString().padStart(2, '0');
+        const timerEl = document.getElementById('hud-timer');
+        if (timerEl) {
+          timerEl.innerText = `Tempo: ${minutes}:${seconds}`;
+        }
+      }
+
+      if (GameState.status === 'PLAYING' && aircraftMesh) {
+        aircraftMesh.position.z -= GameState.aircraftStats.speed * deltaTime;
+
+        updateAircraftMovement(deltaTime);
+        handleProceduralGeneration();
+        handleItemsManagement();
+        checkCollisions();
+
+        camera.position.set(
+          THREE.MathUtils.lerp(camera.position.x, aircraftMesh.position.x, 0.1),
+          THREE.MathUtils.lerp(camera.position.y, aircraftMesh.position.y + 3.5, 0.1),
+          aircraftMesh.position.z + 11
+        );
+        camera.lookAt(aircraftMesh.position.x, aircraftMesh.position.y + 0.5, aircraftMesh.position.z - 10);
+      }
+      renderer.render(scene, camera);
+    }
+
+    function changeState(newStatus) {
+      GameState.status = newStatus;
+      document.getElementById('menu-main').classList.add('hidden');
+      document.getElementById('menu-pause').classList.add('hidden');
+      document.getElementById('menu-quiz').classList.add('hidden');
+      document.getElementById('menu-gameover').classList.add('hidden');
+      document.getElementById('menu-victory').classList.add('hidden');
+      document.getElementById('hud').classList.add('hidden');
+
+      switch (newStatus) {
+        case 'MENU':
+          document.getElementById('menu-main').classList.remove('hidden');
+          AudioManager.stopBGM(); clearAllBuildings(); removeActiveItemMesh();
+          if (aircraftMesh) scene.remove(aircraftMesh);
+          Object.keys(InputState).forEach(k => InputState[k] = false);
+          break;
+        case 'PLAYING':
+          document.getElementById('hud').classList.remove('hidden');
+          AudioManager.resumeAll(); updateHUD();
+          break;
+        case 'PAUSED':
+          document.getElementById('hud').classList.remove('hidden');
+          document.getElementById('menu-pause').classList.remove('hidden');
+          AudioManager.pauseAll();
+          break;
+        case 'QUIZ':
+          document.getElementById('menu-quiz').classList.remove('hidden');
+          document.getElementById('hud').classList.remove('hidden');
+          break;
+        case 'GAMEOVER': document.getElementById('menu-gameover').classList.remove('hidden'); break;
+        case 'VICTORY':
+          document.getElementById('menu-victory').classList.remove('hidden');
+
+          const isPassedInTime = GameState.elapsedTime <= GameConfig.gameplay.targetTime;
+
+          const minUsed = Math.floor(GameState.elapsedTime / 60);
+          const secUsed = Math.floor(GameState.elapsedTime % 60).toString().padStart(2, '0');
+          const timeString = `${minUsed}:${secUsed}`;
+
+          const minTarget = Math.floor(GameConfig.gameplay.targetTime / 60);
+          const secTarget = Math.floor(GameConfig.gameplay.targetTime % 60).toString().padStart(2, '0');
+          const targetString = `${minTarget}:${secTarget}`;
+
+          let finalStatusMsg = `Congratulazioni Dottor ${GameState.username}!\nTi sei laureato con 110/110 in Ingegneria Aerospaziale!\n\n`;
+
+          if (isPassedInTime) {
+            finalStatusMsg += `🎓 LAUREA IN CORSO!\nTempo impiegato: ${timeString} (Tempo limite: ${targetString})`;
+          } else {
+            finalStatusMsg += `🐌 LAUREA FUORICORSO!\nTempo impiegato: ${timeString} (Tempo limite: ${targetString})`;
+          }
+
+          document.getElementById('victory-message').innerText = finalStatusMsg;
+          break;
+      }
+    }
+
+    function updateHUD() {
+      document.getElementById('hud-username').innerText = `Pilota: ${GameState.username}`;
+      document.getElementById('hud-credits').innerText = `CFU: ${GameState.currentCredits} / ${GameConfig.gameplay.targetCredits}`;
+    }
+
+    document.getElementById('btn-start').addEventListener('click', () => {
+      AudioManager.init();
+      const userIn = document.getElementById('username').value.trim();
+      GameState.username = userIn !== "" ? userIn : "Studente Anonimo";
+      GameState.selectedAircraft = document.getElementById('aircraft').value;
+      GameState.aircraftStats = { ...GameConfig.aircraft[GameState.selectedAircraft] };
+      GameState.currentCredits = 0;
+      GameState.safeLaneX = 0;
+      GameState.elapsedTime = 0;
+
+      // GameState.itemQueue = JSON.parse(JSON.stringify(InitialItemQueue));
+      // SOLUZIONE: Crea una copia dell'array preservando le funzioni degli effetti
+      GameState.itemQueue = InitialItemQueue.map(item => ({ ...item }));
+
+      if (scene) scene.fog.density = GameConfig.world.baseFogDensity;
+      GameState.itemSpawnZ = -120;
+
+      clearAllBuildings(); removeActiveItemMesh(); createAircraft(GameState.selectedAircraft);
+      changeState('PLAYING'); AudioManager.playBGM();
+    });
+
+    document.getElementById('btn-pause').addEventListener('click', () => { if (GameState.status === 'PLAYING') changeState('PAUSED'); });
+    document.getElementById('btn-resume').addEventListener('click', () => { if (GameState.status === 'PAUSED') resumeGame(); });
+    document.getElementById('btn-pause-exit').addEventListener('click', () => { changeState('MENU'); });
+    document.getElementById('btn-restart').addEventListener('click', () => { changeState('MENU'); });
+    document.getElementById('btn-menu-return').addEventListener('click', () => { changeState('MENU'); });
+
+    window.onload = () => { init3D(); animate(); changeState('MENU'); };
+  </script>
+</body>
+
+</html>
