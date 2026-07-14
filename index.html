@@ -394,7 +394,11 @@
       itemQueue: [], activeItemData: null, activeItemMesh: null, itemSpawnZ: -120,
       safeLaneX: 0,
       elapsedTime: 0,
-      isItemLoading: false
+      isItemLoading: false,
+
+      isTouching: false,
+      touchTargetX: 0,
+      touchTargetY: 0
     };
 
     const InputState = { forward: false, backward: false, left: false, right: false };
@@ -510,12 +514,55 @@
       window.addEventListener('keydown', handleKeyDown);
       window.addEventListener('keyup', handleKeyUp);
       window.addEventListener('resize', onWindowResize);
+
+      // --- REGISTRA I CONTROLLI TOUCH ---
+      window.addEventListener('touchstart', handleTouchStart, { passive: false });
+      window.addEventListener('touchmove', handleTouchMove, { passive: false });
+      window.addEventListener('touchend', handleTouchEnd, { passive: false });
     }
 
     function onWindowResize() {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+    }
+
+    // ==========================================
+    // GESTIONE DEI CONTROLLI TOUCH (MOBILE)
+    // ==========================================
+    function handleTouchStart(e) {
+      if (GameState.status !== 'PLAYING') return;
+      // Registra il tocco solo se parte sul canvas di gioco (evita i pulsanti della UI)
+      if (e.target.id !== 'gameCanvas') return;
+
+      e.preventDefault(); // Impedisce lo scroll o lo zoom nativo della pagina web
+      GameState.isTouching = true;
+      updateTouchTarget(e.touches[0]);
+    }
+
+    function handleTouchMove(e) {
+      if (GameState.status !== 'PLAYING' || !GameState.isTouching) return;
+      e.preventDefault();
+      updateTouchTarget(e.touches[0]);
+    }
+
+    function handleTouchEnd(e) {
+      GameState.isTouching = false;
+    }
+
+    function updateTouchTarget(touch) {
+      // Otteniamo la posizione normalizzata del tocco sullo schermo (da 0 a 1)
+      const normX = touch.clientX / window.innerWidth;
+      const normY = 1 - (touch.clientY / window.innerHeight);
+
+      // Mappiamo l'asse X sui limiti di gioco (boundariesX = 35)
+      GameState.touchTargetX = (normX * 2 - 1) * GameConfig.world.boundariesX;
+      // Teniamo un piccolo margine per non far incastrare l'aereo sui bordi
+      GameState.touchTargetX = Math.max(-GameConfig.world.boundariesX + 1.5, Math.min(GameConfig.world.boundariesX - 1.5, GameState.touchTargetX));
+
+      // Mappiamo l'asse Y sull'altezza minima e massima consentita (minY = 1, maxY = 30)
+      GameState.touchTargetY = GameConfig.world.minY + normY * (GameConfig.world.maxY - GameConfig.world.minY);
+      GameState.touchTargetY = Math.max(GameConfig.world.minY, Math.min(GameConfig.world.maxY, GameState.touchTargetY));
     }
 
     function handleKeyDown(e) {
@@ -573,7 +620,7 @@
       }
     }
 
-    function updateAircraftMovement(deltaTime) {
+    /* function updateAircraftMovement(deltaTime) {
       if (!aircraftMesh) return;
       const mSpeed = GameState.aircraftStats.maneuverSpeed;
 
@@ -588,6 +635,45 @@
       if (InputState.left) aircraftMesh.rotation.z = THREE.MathUtils.lerp(aircraftMesh.rotation.z, 0.4, 0.1);
       else if (InputState.right) aircraftMesh.rotation.z = THREE.MathUtils.lerp(aircraftMesh.rotation.z, -0.4, 0.1);
       else aircraftMesh.rotation.z = THREE.MathUtils.lerp(aircraftMesh.rotation.z, 0, 0.1);
+    } */
+
+    function updateAircraftMovement(deltaTime) {
+      if (!aircraftMesh) return;
+
+      if (GameState.isTouching) {
+        // --- CONTROLLO TOUCH (Segui il dito sullo schermo) ---
+        const targetX = GameState.touchTargetX;
+        const targetY = GameState.touchTargetY;
+
+        const oldX = aircraftMesh.position.x;
+
+        // Spostamento fluido verso la coordinata toccata (usando l'interpolazione Lerp)
+        aircraftMesh.position.x = THREE.MathUtils.lerp(aircraftMesh.position.x, targetX, 0.15);
+        aircraftMesh.position.y = THREE.MathUtils.lerp(aircraftMesh.position.y, targetY, 0.15);
+
+        // Calcoliamo l'inclinazione (bank angle) in base all'effettivo spostamento laterale
+        const moveDeltaX = aircraftMesh.position.x - oldX;
+        const targetRotationZ = -moveDeltaX * 1.5;
+
+        aircraftMesh.rotation.z = THREE.MathUtils.lerp(aircraftMesh.rotation.z, targetRotationZ, 0.1);
+        aircraftMesh.rotation.z = Math.max(-0.4, Math.min(0.4, aircraftMesh.rotation.z));
+
+      } else {
+        // --- CONTROLLO TASTIERA CLASSICO ---
+        const mSpeed = GameState.aircraftStats.maneuverSpeed;
+
+        if (InputState.left) aircraftMesh.position.x -= mSpeed * deltaTime;
+        if (InputState.right) aircraftMesh.position.x += mSpeed * deltaTime;
+        if (InputState.forward) aircraftMesh.position.y += mSpeed * deltaTime;
+        if (InputState.backward) aircraftMesh.position.y -= mSpeed * deltaTime;
+
+        aircraftMesh.position.x = Math.max(-GameConfig.world.boundariesX, Math.min(GameConfig.world.boundariesX, aircraftMesh.position.x));
+        aircraftMesh.position.y = Math.max(GameConfig.world.minY, Math.min(GameConfig.world.maxY, aircraftMesh.position.y));
+
+        if (InputState.left) aircraftMesh.rotation.z = THREE.MathUtils.lerp(aircraftMesh.rotation.z, 0.4, 0.1);
+        else if (InputState.right) aircraftMesh.rotation.z = THREE.MathUtils.lerp(aircraftMesh.rotation.z, -0.4, 0.1);
+        else aircraftMesh.rotation.z = THREE.MathUtils.lerp(aircraftMesh.rotation.z, 0, 0.1);
+      }
     }
 
     // ==========================================
@@ -1092,6 +1178,7 @@
           AudioManager.stopBGM(); clearAllBuildings(); removeActiveItemMesh();
           if (aircraftMesh) scene.remove(aircraftMesh);
           Object.keys(InputState).forEach(k => InputState[k] = false);
+          GameState.isTouching = false;
           break;
         case 'PLAYING':
           document.getElementById('hud').classList.remove('hidden');
