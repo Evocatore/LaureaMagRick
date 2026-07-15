@@ -223,14 +223,77 @@
       pointer-events: none;
       transition: opacity 0.2s ease;
     }
+
+    /* --- PANNELLO TOUCH E BOTTONI --- */
+    #touch-controls {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      /* Permette i click sul canvas di gioco */
+      z-index: 15;
+    }
+
+    .touch-panel {
+      position: absolute;
+      bottom: 40px;
+      /* Altezza dal fondo */
+      left: 50%;
+      transform: translateX(-50%);
+      /* Distanza dal bordo sinistro. Cambia in "right: 40px" per metterlo a destra */
+      width: 160px;
+      height: 160px;
+      background: rgba(10, 15, 30, 0.4);
+      /* Sfondo scuro molto trasparente */
+      border: 2px solid rgba(0, 210, 255, 0.25);
+      border-radius: 50%;
+      padding: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      grid-template-rows: repeat(3, 1fr);
+      gap: 6px;
+      pointer-events: auto;
+      /* Riattiva il tocco solo sull'area del pannello */
+      box-shadow: 0 0 15px rgba(0, 210, 255, 0.1);
+    }
+
+    .touch-btn {
+      width: 100% !important;
+      height: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      background: rgba(0, 210, 255, 0.15) !important;
+      border: 1px solid rgba(0, 210, 255, 0.4) !important;
+      color: #00d2ff !important;
+      border-radius: 10px !important;
+      font-size: 22px !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      cursor: pointer;
+      user-select: none;
+      -webkit-user-select: none;
+      touch-action: none;
+      box-shadow: none !important;
+      text-transform: none !important;
+    }
+
+    /* Feedback visivo alla pressione */
+    .touch-btn:active {
+      background: rgba(0, 210, 255, 0.6) !important;
+      box-shadow: 0 0 12px rgba(0, 210, 255, 0.8) !important;
+      color: #050510 !important;
+    }
   </style>
 </head>
 
 <body>
 
-  <div id="countdown-overlay" class="hidden">3</div>
-
   <canvas id="gameCanvas"></canvas>
+
+  <div id="countdown-overlay" class="hidden">3</div>
 
   <div id="hud" class="hidden">
     <div class="hud-metric" id="hud-username">Pilota: -</div>
@@ -292,6 +355,23 @@
       <h1>Dottore Magistrale!</h1>
       <p style="margin-bottom: 20px; font-size: 18px;" id="victory-message">Auguri!</p>
       <button id="btn-menu-return">Torna al Menu</button>
+    </div>
+  </div>
+
+  <div id="touch-controls" class="hidden">
+    <div class="touch-panel">
+      <div style="grid-column: 2; grid-row: 1;">
+        <button class="touch-btn" id="t-up">▲</button>
+      </div>
+      <div style="grid-column: 1; grid-row: 2;">
+        <button class="touch-btn" id="t-left">◀</button>
+      </div>
+      <div style="grid-column: 3; grid-row: 2;">
+        <button class="touch-btn" id="t-right">▶</button>
+      </div>
+      <div style="grid-column: 2; grid-row: 3;">
+        <button class="touch-btn" id="t-down">▼</button>
+      </div>
     </div>
   </div>
 
@@ -516,9 +596,11 @@
       window.addEventListener('resize', onWindowResize);
 
       // --- REGISTRA I CONTROLLI TOUCH ---
-      window.addEventListener('touchstart', handleTouchStart, { passive: false });
+      /* window.addEventListener('touchstart', handleTouchStart, { passive: false });
       window.addEventListener('touchmove', handleTouchMove, { passive: false });
-      window.addEventListener('touchend', handleTouchEnd, { passive: false });
+      window.addEventListener('touchend', handleTouchEnd, { passive: false }); */
+
+      initTouchControls();
     }
 
     function onWindowResize() {
@@ -530,6 +612,7 @@
     // ==========================================
     // GESTIONE DEI CONTROLLI TOUCH (MOBILE)
     // ==========================================
+    /*
     function handleTouchStart(e) {
       if (GameState.status !== 'PLAYING') return;
       // Registra il tocco solo se parte sul canvas di gioco (evita i pulsanti della UI)
@@ -564,7 +647,50 @@
       GameState.touchTargetY = GameConfig.world.minY + normY * (GameConfig.world.maxY - GameConfig.world.minY);
       GameState.touchTargetY = Math.max(GameConfig.world.minY, Math.min(GameConfig.world.maxY, GameState.touchTargetY));
     }
+    */
 
+    // ==========================================
+    // SISTEMA CONTROLLI TOUCH (D-PAD)
+    // ==========================================
+    function initTouchControls() {
+      const binds = [
+        { id: 't-up', key: 'forward' },
+        { id: 't-down', key: 'backward' },
+        { id: 't-left', key: 'left' },
+        { id: 't-right', key: 'right' }
+      ];
+
+      binds.forEach(bind => {
+        const btn = document.getElementById(bind.id);
+        if (!btn) return;
+
+        // Attiva la direzione
+        const startMove = (e) => {
+          e.preventDefault();
+          InputState[bind.key] = true;
+        };
+
+        // Disattiva la direzione
+        const stopMove = (e) => {
+          e.preventDefault();
+          InputState[bind.key] = false;
+        };
+
+        // Eventi Touch (Mobile)
+        btn.addEventListener('touchstart', startMove, { passive: false });
+        btn.addEventListener('touchend', stopMove, { passive: false });
+        btn.addEventListener('touchcancel', stopMove, { passive: false });
+
+        // Eventi Mouse (Per test rapidi da PC)
+        btn.addEventListener('mousedown', startMove);
+        btn.addEventListener('mouseup', stopMove);
+        btn.addEventListener('mouseleave', stopMove);
+      });
+    }
+
+    // ==========================================
+    // SISTEMA CONTROLLI KEYBOARD
+    // ==========================================
     function handleKeyDown(e) {
       if (GameState.status !== 'PLAYING') {
         if ((e.key.toLowerCase() === 'p' || e.key === 'Escape') && GameState.status === 'PAUSED') resumeGame();
@@ -1172,6 +1298,12 @@
       document.getElementById('menu-victory').classList.add('hidden');
       document.getElementById('hud').classList.add('hidden');
 
+      // --- NASCONDI I CONTROLLI TOUCH DI DEFAULT AD OGNI CAMBIO STATO ---
+      document.getElementById('touch-controls').classList.add('hidden');
+
+      // --- RESET DI SICUREZZA DEGLI INPUT ---
+      Object.keys(InputState).forEach(k => InputState[k] = false);
+
       switch (newStatus) {
         case 'MENU':
           document.getElementById('menu-main').classList.remove('hidden');
@@ -1182,6 +1314,10 @@
           break;
         case 'PLAYING':
           document.getElementById('hud').classList.remove('hidden');
+          
+          // --- MOSTRA I CONTROLLI TOUCH DURANTE IL GIOCO ---
+          document.getElementById('touch-controls').classList.remove('hidden');
+
           AudioManager.resumeAll(); updateHUD();
           break;
         case 'PAUSED':
