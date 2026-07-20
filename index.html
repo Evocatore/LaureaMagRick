@@ -425,42 +425,100 @@
       {
         type: 'UNFORESEEN', name: 'Caffè Triplo della Macchinetta',
         text: 'Effetto: Spinta iperbolica! Velocità aumentata!',
-        color: 0x6f4e37, modelPath: './models/coffee_cup.stl',
-        effect: (stats) => { stats.speed *= 1.5; }
+        color: 0xd3732f, modelPath: './models/coffee_cup.stl',
+        effect: (stats) => { stats.speed *= 1.5; },
+        mandatory: false
       },
       {
-        type: 'EXAM', name: 'Analisi Matematica I', credits: 30,
-        question: 'Qual è il limite per x che tende a 0 di sin(x)/x ?',
-        options: ['0', '1', 'Infinito'], correct: 1,
-        color: 0xff3333, modelPath: './models/book.stl'
+        type: 'UNFORESEEN', name: 'Vigneto delle Aule I',
+        text: 'Effetto: Lucidità compromessa (Riflessi bassi e Vista annebbiata!)',
+        color: 0x770e0e, // Solo colore personalizzato, usa comunque il fallback geometrico
+        effect: (stats) => { scene.fog.density = 0.005; stats.maneuverSpeed *= 0.75; },
+        mandatory: false
+      },
+      {
+        type: 'UNFORESEEN', name: 'Microclima assurdo in aula 29',
+        text: 'Effetto: Quasi svenimento ()',
+        color: 0x770e0e, // Solo colore personalizzato, usa comunque il fallback geometrico
+        effect: (stats) => { stats.speed *= 0.8; stats.maneuverSpeed *= 0.75 },
+        mandatory: false
       },
       {
         type: 'UNFORESEEN', name: 'Pausa Studio Prolungata',
-        text: 'Effetto: Lucidità ripristinata ma nessun bonus visivo.',
+        text: 'Effetto: Lucidità ripristinata!',
         // Senza color e modelPath: testerà automaticamente il fallback procedurale geometrico
-        effect: (stats) => { stats.maneuverSpeed += 2; }
+        effect: (stats) => { scene.fog.density *= 0.5; stats.maneuverSpeed *= 1.5; },
+        mandatory: false
       },
       {
-        type: 'EXAM', name: 'Fisica Generale I', credits: 40,
-        question: 'Nel vuoto, se un grave cade da un\'altezza h, la sua velocità finale dipende dalla sua massa?',
-        options: ['Sì, direttamente', 'No, mai', 'Solo se la traiettoria è parabolica'], correct: 1,
-        color: 0x33ff33, modelPath: './models/atom.stl'
-      },
-      {
-        type: 'UNFORESEEN', name: 'Sciopero dei Mezzi / Nebbia in Val Padana',
+        type: 'UNFORESEEN', name: 'Nebbia in Val Padana',
         text: 'Effetto: Visibilità compromessa (Foschia densa!)',
-        color: 0x888888, // Solo colore personalizzato, usa comunque il fallback geometrico
-        effect: (stats) => { scene.fog.density = 0.015; stats.speed /= 1.5; }
+        color: 0x770e0e, // Solo colore personalizzato, usa comunque il fallback geometrico
+        effect: (stats) => { scene.fog.density = 0.015; stats.speed *= 0.75; },
+        mandatory: false
       },
       {
-        type: 'EXAM', name: 'Fluidodinamica', credits: 40,
-        question: 'Secondo il teorema di Bernoulli, in un fluido ideale, se la velocità aumenta, allora la pressione locale:',
-        options: ['Aumenta', 'Resta identica', 'Diminuisce'], correct: 2,
-        color: 0x3333ff, modelPath: './models/wing.stl'
+        type: 'UNFORESEEN', name: 'Sciopero dei mezzi',
+        text: 'Effetto: Si procede a passo d\'uomo',
+        color: 0x770e0e, // Solo colore personalizzato, usa comunque il fallback geometrico
+        effect: (stats) => { stats.speed *= 0.75; stats.maneuverSpeed *= 0.85; },
+        mandatory: false
       },
+      {
+        type: 'UNFORESEEN', name: 'Lezione in aula 1D partendo dalle aule R',
+        text: 'Effetto: Si correee',
+        color: 0x770e0e, // Solo colore personalizzato, usa comunque il fallback geometrico
+        effect: (stats) => { stats.speed *= 1.3; stats.maneuverSpeed *= 1.2; },
+        mandatory: false
+      },
+      {
+        type: 'UNFORESEEN', name: '"Wewe" dell\'amica campana',
+        text: 'Effetto: Un raggio di sole nell\'oscurità!',
+        color: 0x770e0e, // Solo colore personalizzato, usa comunque il fallback geometrico
+        effect: (stats) => { scene.fog.density = 0; },
+        mandatory: false
+      },
+      {
+        type: 'EXAM', name: 'Fluidodinamica', credits: 8,
+        question: 'Quali delle seguenti affermazioni sull’equazione di Bernoulli è corretta?',
+        options: ['È sempre applicabile senza alcuna ipotesi', 'Esprime la conservazione dell\'energia meccanica lungo una linea di flusso per un fluido ideale e incomprimibile', 'Tiene conto delle perdite di carico dovute alla viscosità del fluido', 'Esprime la relazione tra viscosità e Reynolds'], corrects: [1],
+        color: 0xff3333, modelPath: './models/book.stl'
+      },
+      {
+        type: 'EXAM', name: 'Fluidodinamica applicata', credits: 6,
+        question: 'In che modo le equazioni di Navier-Stokes rappresentano il comportamento dei fluidi?',
+        options: ['Descrivono la conservazione della quantità di moto', 'Uniscono pressione, viscosità e velocità del fluido', ' Sono così brutte che il fluido le respinge via generando una corrente', 'Determinano come il fluido evolve nel tempo e nello spazio'], corrects: [2],
+        color: 0x33ff33, modelPath: './models/book.stl'
+      },
+      {
+        type: 'EXAM', name: 'Strutture Base', credits: 10,
+        question: 'Chi ha inventato Adams?',
+        options: ['Erasmo Carrera', 'Sabrina Corpino', 'Il diavolo', 'Catelani (e forse Hexagon)'], corrects: [2,3],
+        color: 0x9bc211, modelPath: './models/book.stl'
+      },
+
+      {
+        type: 'EXAM', name: 'Senso del Giudizio Base', credits: 10,
+        question: 'Chi è peggio?',
+        options: ['Un aerodinamico', 'Un sistemista', 'Un pescarese', 'Le patate crude della mensa'], corrects: [2],
+        color: 0x06697a, modelPath: './models/book.stl'
+      },
+      {
+        type: 'EXAM', name: 'Metodi Numerici', credits: 12,
+        question: 'A cosa serve il metodo di bisezione?',
+        options: ['A trovare gli zeri di una funzione non lineare', 'A trovare l\'errore tra il valore reale in un punto di una funzione non lineare e il suo valore misurato', 'A fare ridere la Pieraccini e Scialò', 'A prendere un bel voto all\'esame'], corrects: [0],
+        color: 0xa0128d, modelPath: './models/book.stl'
+      },
+      /*{
+        type: 'EXAM', name: '', credits: 8,
+        question: '',
+        options: [''], correct: 3,
+        color: 0x3333ff, modelPath: './models/book.stl'
+      },*/
+
       {
         type: 'GRADUATION', name: 'Pergamena di Laurea Magistrale',
-        color: 0x33ff66, modelPath: './models/diploma.stl'
+        color: 0x0ab936, modelPath: './models/diploma.stl'
       }
     ];
 
@@ -475,6 +533,7 @@
       safeLaneX: 0,
       elapsedTime: 0,
       isItemLoading: false,
+      isResuming: false,
 
       isTouching: false,
       touchTargetX: 0,
@@ -692,6 +751,7 @@
     // SISTEMA CONTROLLI KEYBOARD
     // ==========================================
     function handleKeyDown(e) {
+      if (GameState.isResuming) return;
       if (GameState.status !== 'PLAYING') {
         if ((e.key.toLowerCase() === 'p' || e.key === 'Escape') && GameState.status === 'PAUSED') resumeGame();
         return;
@@ -711,11 +771,13 @@
     }
 
     function resumeGame() {
+      GameState.isResuming = true;
       document.getElementById('menu-pause').classList.add('hidden');
       document.getElementById('menu-quiz').classList.add('hidden');
 
       startCountdown(3, () => {
         clock.getDelta();
+        GameState.isResuming = false;
         changeState('PLAYING');
       });
     }
@@ -961,6 +1023,11 @@
         GameState.activeItemMesh.rotation.x += 0.01;
 
         if (aircraftMesh && GameState.activeItemMesh.position.z > aircraftMesh.position.z + GameConfig.world.destroyDistanceBehind) {
+          // Controlliamo se l'oggetto corrente NON è obbligatorio
+          const currentItem = GameState.activeItemData;
+          if (currentItem && currentItem.mandatory === false) {
+            GameState.itemQueue.shift();
+          }
           removeActiveItemMesh();
           GameState.itemSpawnZ = aircraftMesh.position.z - 180;
         }
@@ -1053,7 +1120,7 @@
       examData.options.forEach((option, index) => {
         const btn = document.createElement('button'); btn.innerText = option;
         btn.addEventListener('click', () => {
-          if (index === examData.correct) {
+          if (examData.corrects.includes(index)) {
             GameState.currentCredits += examData.credits;
             resumeGame();
           } else {
@@ -1199,7 +1266,9 @@
         const depth = Math.random() * 8 + 8;
 
         const geo = new THREE.BoxGeometry(width, height, depth);
-        const mat = new THREE.MeshStandardMaterial({ color: isObstacleInPath ? 0x2e3b4e : 0x141f2e, roughness: 0.6 });
+        // const col1 = 0x2e3b4e, col2 = 0x141f2e;
+        const col1 = 0x6d87ad, col2 = 0x4b6486;
+        const mat = new THREE.MeshStandardMaterial({ color: isObstacleInPath ? col1 : col2, roughness: 0.6 });
         const building = new THREE.Mesh(geo, mat);
 
         let xPos = 0;
@@ -1256,6 +1325,39 @@
     // ==========================================
     // GAME LOOP
     // ==========================================
+    /* function animate() {
+      requestAnimationFrame(animate);
+      const deltaTime = clock.getDelta();
+
+      if (GameState.status === 'PLAYING' || GameState.status === 'QUIZ') {
+        GameState.elapsedTime += deltaTime;
+
+        const minutes = Math.floor(GameState.elapsedTime / 60);
+        const seconds = Math.floor(GameState.elapsedTime % 60).toString().padStart(2, '0');
+        const timerEl = document.getElementById('hud-timer');
+        if (timerEl) {
+          timerEl.innerText = `Tempo: ${minutes}:${seconds}`;
+        }
+      }
+
+      if (GameState.status === 'PLAYING' && aircraftMesh) {
+        aircraftMesh.position.z -= GameState.aircraftStats.speed * deltaTime;
+
+        updateAircraftMovement(deltaTime);
+        handleProceduralGeneration();
+        handleItemsManagement();
+        checkCollisions();
+
+        camera.position.set(
+          THREE.MathUtils.lerp(camera.position.x, aircraftMesh.position.x, 0.1),
+          THREE.MathUtils.lerp(camera.position.y, aircraftMesh.position.y + 3.5, 0.1),
+          aircraftMesh.position.z + 11
+        );
+        camera.lookAt(aircraftMesh.position.x, aircraftMesh.position.y + 0.5, aircraftMesh.position.z - 10);
+      }
+      renderer.render(scene, camera);
+    } */
+
     function animate() {
       requestAnimationFrame(animate);
       const deltaTime = clock.getDelta();
@@ -1269,6 +1371,12 @@
         if (timerEl) {
           timerEl.innerText = `Tempo: ${minutes}:${seconds}`;
         }
+      }
+
+      // MODIFICA: Permette il rendering fisso e il corretto posizionamento della camera durante il countdown iniziale
+      if (GameState.status === 'STARTING_COUNTDOWN' && aircraftMesh) {
+        camera.position.set(aircraftMesh.position.x, aircraftMesh.position.y + 3.5, aircraftMesh.position.z + 11);
+        camera.lookAt(aircraftMesh.position.x, aircraftMesh.position.y + 0.5, aircraftMesh.position.z - 10);
       }
 
       if (GameState.status === 'PLAYING' && aircraftMesh) {
@@ -1314,7 +1422,7 @@
           break;
         case 'PLAYING':
           document.getElementById('hud').classList.remove('hidden');
-          
+
           // --- MOSTRA I CONTROLLI TOUCH DURANTE IL GIOCO ---
           document.getElementById('touch-controls').classList.remove('hidden');
 
@@ -1361,7 +1469,7 @@
       document.getElementById('hud-credits').innerText = `CFU: ${GameState.currentCredits} / ${GameConfig.gameplay.targetCredits}`;
     }
 
-    document.getElementById('btn-start').addEventListener('click', () => {
+    /* document.getElementById('btn-start').addEventListener('click', () => {
       AudioManager.init();
       const userIn = document.getElementById('username').value.trim();
       GameState.username = userIn !== "" ? userIn : "Studente Anonimo";
@@ -1381,6 +1489,58 @@
 
       clearAllBuildings(); removeActiveItemMesh(); createAircraft(GameState.selectedAircraft);
       changeState('PLAYING'); AudioManager.playBGM();
+      // changeState('PAUSED');
+      // resumeGame();
+    }); */
+
+    document.getElementById('btn-start').addEventListener('click', () => {
+      AudioManager.init();
+      const userIn = document.getElementById('username').value.trim();
+      GameState.username = userIn !== "" ? userIn : "Studente Anonimo";
+      GameState.selectedAircraft = document.getElementById('aircraft').value;
+      GameState.aircraftStats = { ...GameConfig.aircraft[GameState.selectedAircraft] };
+      GameState.currentCredits = 0;
+      GameState.safeLaneX = 0;
+      GameState.elapsedTime = 0;
+      GameState.isItemLoading = false;
+
+      // Crea una copia dell'array preservando le funzioni degli effetti
+      GameState.itemQueue = InitialItemQueue.map(item => ({ ...item }));
+
+      if (scene) scene.fog.density = GameConfig.world.baseFogDensity;
+      GameState.itemSpawnZ = -120;
+
+      // 1. Pulisce e rigenera il mondo di gioco in background
+      clearAllBuildings();
+      removeActiveItemMesh();
+      createAircraft(GameState.selectedAircraft);
+
+      // 2. Genera subito i primi edifici e oggetti visibili attorno/davanti al giocatore
+      handleProceduralGeneration();
+      handleItemsManagement();
+
+      // 3. Posiziona la telecamera dietro l'aereo in modo che l'inquadratura iniziale sia corretta
+      if (aircraftMesh) {
+        camera.position.set(aircraftMesh.position.x, aircraftMesh.position.y + 3.5, aircraftMesh.position.z + 11);
+        camera.lookAt(aircraftMesh.position.x, aircraftMesh.position.y + 0.5, aircraftMesh.position.z - 10);
+      }
+
+      // 4. Nasconde il menu principale e mostra l'HUD/controlli di gioco
+      document.getElementById('menu-main').classList.add('hidden');
+      document.getElementById('hud').classList.remove('hidden');
+      document.getElementById('touch-controls').classList.remove('hidden');
+
+      // 5. Imposta lo stato su un valore temporaneo che blocca il movimento (es. 'PAUSED' o lasciando congelato l'update)
+      GameState.status = 'STARTING_COUNTDOWN';
+      GameState.isResuming = true;
+
+      // 6. Avvia la musica e il countdown di 3 secondi uguale al resume
+      AudioManager.playBGM();
+      startCountdown(3, () => {
+        clock.getDelta(); // Resetta il delta del tempo per evitare scatti orari
+        GameState.isResuming = false;
+        changeState('PLAYING'); // Avvia effettivamente il loop di movimento
+      });
     });
 
     document.getElementById('btn-pause').addEventListener('click', () => { if (GameState.status === 'PLAYING') changeState('PAUSED'); });
