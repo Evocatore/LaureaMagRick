@@ -13,6 +13,7 @@
       margin: 0;
       padding: 0;
       user-select: none;
+      color: #5706b3;
     }
 
     body,
@@ -417,24 +418,16 @@
       },
       gameplay: {
         targetCredits: 110,
-        targetTime: 300
+        targetTime: 200
       }
     };
 
     const InitialItemQueue = [
       {
-        type: 'UNFORESEEN', name: 'Caffè Triplo della Macchinetta',
-        text: 'Effetto: Spinta iperbolica! Velocità aumentata!',
-        color: 0xd3732f, modelPath: './models/coffee_cup.stl',
-        effect: (stats) => { stats.speed *= 1.5; },
-        mandatory: false
-      },
-      {
-        type: 'UNFORESEEN', name: 'Vigneto delle Aule I',
-        text: 'Effetto: Lucidità compromessa (Riflessi bassi e Vista annebbiata!)',
-        color: 0x770e0e, // Solo colore personalizzato, usa comunque il fallback geometrico
-        effect: (stats) => { scene.fog.density = 0.005; stats.maneuverSpeed *= 0.75; },
-        mandatory: false
+        type: 'EXAM', name: 'Fluidodinamica', credits: 8,
+        question: 'Quali delle seguenti affermazioni sull’equazione di Bernoulli è corretta?',
+        options: ['È sempre applicabile senza alcuna ipotesi', 'Esprime la conservazione dell\'energia meccanica lungo una linea di flusso per un fluido ideale e incomprimibile', 'Tiene conto delle perdite di carico dovute alla viscosità del fluido', 'Esprime la relazione tra viscosità e Reynolds'], corrects: [1],
+        color: 0xff3333, modelPath: './models/book.stl'
       },
       {
         type: 'UNFORESEEN', name: 'Microclima assurdo in aula 29',
@@ -451,17 +444,16 @@
         mandatory: false
       },
       {
-        type: 'UNFORESEEN', name: 'Nebbia in Val Padana',
-        text: 'Effetto: Visibilità compromessa (Foschia densa!)',
-        color: 0x770e0e, // Solo colore personalizzato, usa comunque il fallback geometrico
-        effect: (stats) => { scene.fog.density = 0.015; stats.speed *= 0.75; },
-        mandatory: false
+        type: 'EXAM', name: 'Fluidodinamica applicata', credits: 7,
+        question: 'In che modo le equazioni di Navier-Stokes rappresentano il comportamento dei fluidi?',
+        options: ['Descrivono la conservazione della quantità di moto', 'Uniscono pressione, viscosità e velocità del fluido', 'Sono così brutte che il fluido le respinge via generando un flusso', 'Determinano come il fluido evolve nel tempo e nello spazio'], corrects: [2],
+        color: 0x33ff33, modelPath: './models/book.stl'
       },
       {
-        type: 'UNFORESEEN', name: 'Sciopero dei mezzi',
-        text: 'Effetto: Si procede a passo d\'uomo',
-        color: 0x770e0e, // Solo colore personalizzato, usa comunque il fallback geometrico
-        effect: (stats) => { stats.speed *= 0.75; stats.maneuverSpeed *= 0.85; },
+        type: 'UNFORESEEN', name: 'Caffè Triplo della Macchinetta',
+        text: 'Effetto: Spinta iperbolica! Velocità aumentata!',
+        color: 0xd3732f, modelPath: './models/coffee_cup.stl',
+        effect: (stats) => { stats.speed *= 1.5; },
         mandatory: false
       },
       {
@@ -479,29 +471,37 @@
         mandatory: false
       },
       {
-        type: 'EXAM', name: 'Fluidodinamica', credits: 8,
-        question: 'Quali delle seguenti affermazioni sull’equazione di Bernoulli è corretta?',
-        options: ['È sempre applicabile senza alcuna ipotesi', 'Esprime la conservazione dell\'energia meccanica lungo una linea di flusso per un fluido ideale e incomprimibile', 'Tiene conto delle perdite di carico dovute alla viscosità del fluido', 'Esprime la relazione tra viscosità e Reynolds'], corrects: [1],
-        color: 0xff3333, modelPath: './models/book.stl'
-      },
-      {
-        type: 'EXAM', name: 'Fluidodinamica applicata', credits: 6,
-        question: 'In che modo le equazioni di Navier-Stokes rappresentano il comportamento dei fluidi?',
-        options: ['Descrivono la conservazione della quantità di moto', 'Uniscono pressione, viscosità e velocità del fluido', ' Sono così brutte che il fluido le respinge via generando una corrente', 'Determinano come il fluido evolve nel tempo e nello spazio'], corrects: [2],
-        color: 0x33ff33, modelPath: './models/book.stl'
-      },
-      {
         type: 'EXAM', name: 'Strutture Base', credits: 10,
         question: 'Chi ha inventato Adams?',
-        options: ['Erasmo Carrera', 'Sabrina Corpino', 'Il diavolo', 'Catelani (e forse Hexagon)'], corrects: [2,3],
+        options: ['Erasmo Carrera', 'Sabrina Corpino', 'Il diavolo', 'Catelani (e forse Hexagon)'], corrects: [2, 3],
         color: 0x9bc211, modelPath: './models/book.stl'
       },
-
       {
-        type: 'EXAM', name: 'Senso del Giudizio Base', credits: 10,
+        type: 'UNFORESEEN', name: 'Sciopero dei mezzi',
+        text: 'Effetto: Si procede a passo d\'uomo',
+        color: 0x770e0e, // Solo colore personalizzato, usa comunque il fallback geometrico
+        effect: (stats) => { stats.speed *= 0.75; stats.maneuverSpeed *= 0.85; },
+        mandatory: false
+      },
+      {
+        type: 'EXAM', name: 'Senso del Giudizio Base', credits: 20,
         question: 'Chi è peggio?',
         options: ['Un aerodinamico', 'Un sistemista', 'Un pescarese', 'Le patate crude della mensa'], corrects: [2],
         color: 0x06697a, modelPath: './models/book.stl'
+      },
+      {
+        type: 'UNFORESEEN', name: 'Lezione in aula 1D partendo dalle aule R',
+        text: 'Effetto: Si correee',
+        color: 0x770e0e, // Solo colore personalizzato, usa comunque il fallback geometrico
+        effect: (stats) => { stats.speed *= 1.3; stats.maneuverSpeed *= 1.2; },
+        mandatory: false
+      },
+      {
+        type: 'UNFORESEEN', name: 'Pausa Studio Prolungata',
+        text: 'Effetto: Lucidità ripristinata!',
+        // Senza color e modelPath: testerà automaticamente il fallback procedurale geometrico
+        effect: (stats) => { scene.fog.density *= 0.5; stats.maneuverSpeed *= 1.5; },
+        mandatory: false
       },
       {
         type: 'EXAM', name: 'Metodi Numerici', credits: 12,
@@ -509,12 +509,71 @@
         options: ['A trovare gli zeri di una funzione non lineare', 'A trovare l\'errore tra il valore reale in un punto di una funzione non lineare e il suo valore misurato', 'A fare ridere la Pieraccini e Scialò', 'A prendere un bel voto all\'esame'], corrects: [0],
         color: 0xa0128d, modelPath: './models/book.stl'
       },
-      /*{
-        type: 'EXAM', name: '', credits: 8,
-        question: '',
-        options: [''], correct: 3,
+      {
+        type: 'EXAM', name: 'Strutture aeronautiche', credits: 10,
+        question: 'Qual è la funzione principale delle fibre in un materiale composito?',
+        options: ['Resistere ai carichi meccanici', 'Proteggere dalla corrosione', 'Ridurre il costo del materiale', 'Facilitare la lavorazione'], correct: 0,
+        color: 0x0eada0, modelPath: './models/book.stl'
+      },
+      {
+        type: 'UNFORESEEN', name: 'Nebbia in Val Padana',
+        text: 'Effetto: Visibilità compromessa (Foschia densa!)',
+        color: 0xa7b306, // Solo colore personalizzato, usa comunque il fallback geometrico
+        effect: (stats) => { scene.fog.density = 0.015; stats.speed *= 0.75; },
+        mandatory: false
+      },
+      {
+        type: 'EXAM', name: 'Progettazione di Veicoli Aerospaziali', credits: 10,
+        question: 'Nella propagazione delle cricche per fatica, quale parametro governa principalmente la velocità di crescita della cricca?',
+        options: ['Il modulo di Young', 'Il coefficiente di Poisson', 'La densità del materiale', 'Il fattore di intensità degli sforzi'], correct: 3,
         color: 0x3333ff, modelPath: './models/book.stl'
-      },*/
+      },
+      {
+        type: 'UNFORESEEN', name: '"Wewe" dell\'amica campana',
+        text: 'Effetto: Un raggio di sole nell\'oscurità!',
+        color: 0x770e0e, // Solo colore personalizzato, usa comunque il fallback geometrico
+        effect: (stats) => { scene.fog.density = 0; },
+        mandatory: false
+      },
+      {
+        type: 'EXAM', name: 'Sistemi di bordo aerospaziali', credits: 8,
+        question: 'Qual è il ruolo del Flight Management System (FMS) in un aeromobile moderno?',
+        options: ['Controlla le superfici di comando', 'Gestisce navigazione e prestazioni del volo', 'Gestisce le comunicazioni radio', 'Alimenta i sistemi avionici'], correct: 1,
+        color: 0xa7b306, modelPath: './models/book.stl'
+      },
+      {
+        type: 'UNFORESEEN', name: 'Caffè Triplo della Macchinetta',
+        text: 'Effetto: Spinta iperbolica! Velocità aumentata!',
+        color: 0xd3732f, modelPath: './models/coffee_cup.stl',
+        effect: (stats) => { stats.speed *= 1.5; },
+        mandatory: false
+      },
+      {
+        type: 'UNFORESEEN', name: 'Vigneto delle Aule I',
+        text: 'Effetto: Lucidità compromessa (Riflessi bassi e Vista annebbiata!)',
+        color: 0x5706b3, // Solo colore personalizzato, usa comunque il fallback geometrico
+        effect: (stats) => { scene.fog.density = 0.005; stats.maneuverSpeed *= 0.75; },
+        mandatory: false
+      },
+      {
+        type: 'EXAM', name: 'Propulsione', credits: 8,
+        question: 'Qual è la funzione della turbina libera di potenza in un turboshaft bialbero?',
+        options: ['Trascinare il compressore di bassa', 'Trascinare il compressore di alta', 'Generare potenza sull\'albero dell\'utilizzatore', 'Generare spinta attraverso la velocità dei gas liberi in uscita dall\'ugello'], correct: 2,
+        color: 0x5706b3, modelPath: './models/book.stl'
+      },
+      {
+        type: 'UNFORESEEN', name: '"Wewe" dell\'amica campana',
+        text: 'Effetto: Un raggio di sole nell\'oscurità!',
+        color: 0x770e0e, // Solo colore personalizzato, usa comunque il fallback geometrico
+        effect: (stats) => { scene.fog.density = 0; },
+        mandatory: false
+      },
+      {
+        type: 'EXAM', name: 'Aerogasdinamica', credits: 12,
+        question: 'Cosa è possibile ottenere dalle misurazioni effettuate mediante un tubo di Pitot?',
+        options: ['Pressione totale d\'arresto', 'Pressione statica', 'Pressione differenziale', 'Velocità del flusso'], correct: 2,
+        color: 0x3333ff, modelPath: './models/book.stl'
+      },
 
       {
         type: 'GRADUATION', name: 'Pergamena di Laurea Magistrale',
@@ -1451,7 +1510,7 @@
           const secTarget = Math.floor(GameConfig.gameplay.targetTime % 60).toString().padStart(2, '0');
           const targetString = `${minTarget}:${secTarget}`;
 
-          let finalStatusMsg = `Congratulazioni Dottor ${GameState.username}!\nTi sei laureato con 110/110 in Ingegneria Aerospaziale!\n\n`;
+          let finalStatusMsg = `Congratulazioni Dottor ${GameState.username}!\nTi sei laureato con 104 e lode/110 in Ingegneria Aerospaziale!\n\n`;
 
           if (isPassedInTime) {
             finalStatusMsg += `🎓 LAUREA IN CORSO!\nTempo impiegato: ${timeString} (Tempo limite: ${targetString})`;
